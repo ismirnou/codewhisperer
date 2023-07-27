@@ -27,6 +27,12 @@ class CodewhispererStack(Stack):
                               default="codewhisperer"
                               )
 
+        # create cfn stack parameter with name apikey
+        api_key = CfnParameter(self, "apikey",
+                               type="String",
+                               description="API key for the Codewhisperer API"
+                               )
+
         # Create s3 bucket with name {prefix value}-cats with versioning enabled and removal policy destroy. Physical ID should be s3-cats. Block public access
         bucket = s3.Bucket(self, f"s3-cats",
                            bucket_name=f"{prefix.value_as_string}-cats",
@@ -101,10 +107,10 @@ class CodewhispererStack(Stack):
                                                  "functions"),
                                              role=role)
 
-        # create ssm secure string parameter with name /auth/token and value 12345678
+        # create ssm secure string parameter with name /auth/token and value from apikey parameter
         ssm.StringParameter(self, "token",
                             parameter_name="/auth/token",
-                            string_value="12345678")
+                            string_value=api_key.value_as_string)
 
         # add enviroment variables to authorizer lambda function PARAMETER_STORE_NAME
         authorizer_lambda.add_environment(
